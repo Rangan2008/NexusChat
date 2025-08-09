@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .result {
+            background: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #f5fff5;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Upload Test Page</h1>
+    
+    <div class="test-section">
+        <h2>1. Server Status Test</h2>
+        <button onclick="testServerStatus()">Test Server Connection</button>
+        <div id="serverResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. PDF Functionality Test</h2>
+        <button onclick="testPDFSupport()">Test PDF Support</button>
+        <div id="pdfSupportResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. File Upload Test</h2>
+        <input type="file" id="testFile" accept=".pdf,.png,.jpg,.jpeg" />
+        <button onclick="testFileUpload()">Upload & Test</button>
+        <div id="uploadResult" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. List Uploaded Files</h2>
+        <button onclick="listFiles()">List My Files</button>
+        <div id="filesResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function testServerStatus() {
+            const resultDiv = document.getElementById('serverResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Testing server connection...';
+            
+            try {
+                const response = await fetch('/api/profile', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✓ Server connected successfully</strong><br>
+                        User: ${data.username}<br>
+                        Total chats: ${data.total_chats}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Server error: ${response.status} - You might need to login first`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Connection failed: ${error.message}`;
+            }
+        }
+        
+        async function testPDFSupport() {
+            const resultDiv = document.getElementById('pdfSupportResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Testing PDF support...';
+            
+            try {
+                const response = await fetch('/api/test/pdf', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✓ PDF Support Test Results:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <strong>❌ PDF Support Test Failed:</strong><br>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Test failed: ${error.message}`;
+            }
+        }
+        
+        async function testFileUpload() {
+            const fileInput = document.getElementById('testFile');
+            const resultDiv = document.getElementById('uploadResult');
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Uploading and processing file...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                const response = await fetch('/api/files', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✓ File uploaded successfully!</strong><br>
+                        <strong>File:</strong> ${data.filename} (${data.filetype})<br>
+                        <strong>Size:</strong> ${data.filesize} bytes<br>
+                        <strong>Text Length:</strong> ${data.text_length} characters<br>
+                        <strong>Extracted Text Preview:</strong><br>
+                        <pre>${data.text}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <strong>❌ Upload failed:</strong><br>
+                        ${data.error}
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Upload failed: ${error.message}`;
+            }
+        }
+        
+        async function listFiles() {
+            const resultDiv = document.getElementById('filesResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Loading files...';
+            
+            try {
+                const response = await fetch('/api/files', {
+                    credentials: 'include'
+                });
+                
+                const files = await response.json();
+                
+                if (response.ok) {
+                    if (files.length === 0) {
+                        resultDiv.className = 'result';
+                        resultDiv.innerHTML = 'No files uploaded yet.';
+                    } else {
+                        resultDiv.className = 'result success';
+                        let html = '<strong>📁 Your uploaded files:</strong><br><br>';
+                        files.forEach(file => {
+                            html += `
+                                <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 4px;">
+                                    <strong>${file.filename}</strong> (${file.filetype})<br>
+                                    <small>Size: ${file.filesize} bytes | Uploaded: ${new Date(file.uploaded_at).toLocaleString()}</small><br>
+                                    <details>
+                                        <summary>View extracted text</summary>
+                                        <pre style="max-height: 200px; overflow-y: auto;">${file.extracted_text}</pre>
+                                    </details>
+                                </div>
+                            `;
+                        });
+                        resultDiv.innerHTML = html;
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Failed to load files: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Failed to load files: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
