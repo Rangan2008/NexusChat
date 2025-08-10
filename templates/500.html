@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error - NexusChat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='public/style.css') }}">
+    <style>
+        /* Full height layout for error page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100vh;
+        }
+        
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+        }
+        
+        .error-content {
+            background: var(--bg-color, #ffffff);
+            padding: 3rem;
+            border-radius: var(--radius-xl, 12px);
+            box-shadow: var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.1));
+            max-width: 500px;
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: bold;
+            color: #dc2626;
+            margin: 0;
+            line-height: 1;
+        }
+        
+        .error-message {
+            font-size: 1.5rem;
+            color: var(--text-color, #333);
+            margin: 1rem 0 2rem 0;
+        }
+        
+        .error-description {
+            color: var(--text-secondary, #666);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            margin-left: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-content">
+            <h1 class="error-code">500</h1>
+            <h2 class="error-message">Server Error</h2>
+            <p class="error-description">
+                Something went wrong on our end. We're working to fix it. Please try again in a few moments.
+            </p>
+            <div>
+                <a href="/" class="btn">Go Home</a>
+                <a href="javascript:location.reload()" class="btn btn-secondary">Try Again</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

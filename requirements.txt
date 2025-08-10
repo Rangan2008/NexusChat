@@ -1,0 +1,33 @@
+# Flask and core dependencies
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Database
+PyMySQL==1.1.0
+mysql-connector-python==8.2.0
+psycopg2-binary==2.9.9  # For PostgreSQL (Render's default)
+
+# Security
+bcrypt==4.1.2
+
+# AI Integration
+google-generativeai==0.3.2
+
+# File Processing
+PyMuPDF==1.23.8  # For PDF text extraction (fitz)
+Pillow==10.1.0   # For image processing
+pytesseract==0.3.10  # For OCR text extraction from images
+
+# Utilities
+python-dotenv==1.0.0  # For environment variables
+
+# Development (optional)
+python-decouple==3.8  # Alternative for environment variables
+
+# Production server
+gunicorn==21.2.0
+
+# Production utilities
+whitenoise==6.6.0  # Static file serving
+
+# Note: Tesseract OCR will be installed via build script on Render

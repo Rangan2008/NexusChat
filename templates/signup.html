@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - NexusChat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='public/style.css') }}">
+    <style>
+        /* Full height layout for signup page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100vh;
+        }
+        
+        body.auth {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .signup-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            margin: 1rem;
+        }
+    </style>
+</head>
+
+<body class="auth">
+    <div class="signup-container">
+        <div class="logo">
+            <h1>🤖 NexusChat</h1>
+            <p>Create your account and start chatting!</p>
+        </div>
+
+        <div id="message-container"></div>
+
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a unique username" required>
+                <small>3-32 characters, letters, numbers, underscore, and hyphen only</small>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                <small>At least 8 characters</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+            </div>
+
+            <button type="submit" class="btn" id="signup-btn">Create Account</button>
+        </form>
+
+        <div class="links">
+
+        <div class="links">
+            <p>Already have an account? <a href="/login">Sign in here</a></p>
+            <p><a href="/">← Back to Home</a></p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('signup-form');
+        const messageContainer = document.getElementById('message-container');
+        const signupBtn = document.getElementById('signup-btn');
+
+        function showMessage(message, type = 'error') {
+            messageContainer.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const data = {
+                username: formData.get('username'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                confirmPassword: formData.get('confirm-password')
+            };
+
+            // Client-side validation
+            if (!data.username || !data.email || !data.password || !data.confirmPassword) {
+                showMessage('Please fill in all fields');
+                return;
+            }
+
+            if (data.password !== data.confirmPassword) {
+                showMessage('Passwords do not match');
+                return;
+            }
+
+            if (data.password.length < 8) {
+                showMessage('Password must be at least 8 characters long');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: data.username,
+                        email: data.email,
+                        password: data.password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('Account created successfully! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showMessage(result.error || 'Registration failed');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.');
+                console.error('Signup error:', error);
+            }
+        });
+
+        // Check if user is already logged in
+        fetch('/api/chats', { credentials: 'include' })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/chat';
+                }
+            })
+            .catch(() => {
+                // User not logged in, stay on signup page
+            });
+    </script>
+</body>
+
+</html>
