@@ -5,7 +5,6 @@ A modern, full-featured Flask-based chat application with advanced AI integratio
 ![NexusChat](https://img.shields.io/badge/Python-3.11-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.0.0-green.svg)
 ![AI](https://img.shields.io/badge/AI-Google%20Gemini-orange.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## ✨ Key Features
 
@@ -481,4 +480,5 @@ For issues and questions:
 ---
 
 **NexusChat** - Where AI meets conversation! 🤖✨
+
 
