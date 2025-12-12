@@ -44,9 +44,43 @@ CORS(app, supports_credentials=True)
 # Configure Gemini AI
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'your-gemini-api-key-here')
 print("GEMINI_API_KEY:", repr(GEMINI_API_KEY))
+
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
-vision_model = genai.GenerativeModel('gemini-1.5-flash')
+
+# Automatically detect the correct model name
+def get_supported_model():
+    """
+    Lists available Gemini models and returns the first one that supports generateContent.
+    Prioritizes gemini-1.5-flash or gemini-1.5-pro if available.
+    """
+    try:
+        models = genai.list_models()
+        preferred_models = ['gemini-2.5-flash', 'gemini-2.5-pro']
+        
+        # First, try to find preferred models
+        for preferred in preferred_models:
+            for m in models:
+                if preferred in m.name and 'generateContent' in m.supported_generation_methods:
+                    print(f"Using preferred model: {m.name}")
+                    return m.name.split('/')[-1]  # Extract model ID from 'models/gemini-1.5-flash'
+        
+        # Fallback: use the first model that supports generateContent
+        for m in models:
+            if 'generateContent' in m.supported_generation_methods:
+                print(f"Using fallback model: {m.name}")
+                return m.name.split('/')[-1]
+        
+        # If no model found, raise error
+        raise ValueError("No supported model found for generateContent")
+    except Exception as e:
+        print(f"Error detecting model: {e}")
+        # Hard fallback to known working model
+        return 'gemini-1.5-flash'
+
+model_name = get_supported_model()
+model = genai.GenerativeModel(model_name)
+# Gemini 1.5 models support images natively, no separate vision model needed
+vision_model = model
 
 # MongoDB setup
 MONGO_URI = os.getenv('MONGO_URI')
@@ -616,3 +650,4 @@ if __name__ == "__main__":
 if os.environ.get("RENDER") or os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
     from whitenoise import WhiteNoise
     app.wsgi_app = WhiteNoise(app.wsgi_app, root=os.path.join(os.path.dirname(__file__), 'static'))
+
